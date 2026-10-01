@@ -1,0 +1,103 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><title>Gamme Usinage & Calculateur Outils</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#eef0f3;--card:#fff;--tx:#1b232d;--mu:#667;--ac:#d97a00;--sb:#1f2a37;--bd:#cfd5dc;--ok:#1a9a4a;--wa:#e08a00;--ko:#d12f2f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#12171d;--card:#1c232c;--tx:#e6eaee;--mu:#93a0ae;--bd:#34404d;--sb:#0c1015}}
+:root[data-theme=dark]{--bg:#12171d;--card:#1c232c;--tx:#e6eaee;--mu:#93a0ae;--bd:#34404d;--sb:#0c1015}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;font:14px system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--tx);display:flex;min-height:100vh}
+nav{width:200px;background:var(--sb);color:#cfd6de;padding:12px 0;flex-shrink:0}
+nav h1{font-size:13px;color:var(--ac);padding:4px 14px 12px;margin:0;letter-spacing:.5px}
+nav a{display:block;padding:9px 14px;cursor:pointer;border-left:3px solid transparent}
+nav a.on,nav a:hover{background:#ffffff14;border-color:var(--ac);color:#fff}
+main{flex:1;min-width:0;padding:16px}
+h2{margin:0 0 12px;font-size:20px}h3{margin:18px 0 8px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:6px;padding:12px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+label{display:block;font-size:11px;color:var(--mu);text-transform:uppercase}
+input,select{width:100%;padding:6px;border:1px solid var(--bd);border-radius:4px;background:var(--card);color:var(--tx);font:inherit}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{background:var(--sb);color:#fff;padding:6px;text-align:left;white-space:nowrap;font-size:11px}
+td{border:1px solid var(--bd);padding:3px 5px;vertical-align:middle}td input,td select{min-width:56px;padding:4px;border:0;background:transparent}
+button{background:var(--ac);color:#fff;border:0;border-radius:4px;padding:7px 12px;cursor:pointer;font:inherit}
+button.g{background:var(--mu)}button.r{background:var(--ko);padding:4px 8px}.tb{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.kpi{font-size:24px;font-weight:700;color:var(--ac)}.miss{color:var(--ko);font-style:italic;font-size:11px}
+.b{padding:2px 8px;border-radius:10px;color:#fff;font-size:11px;white-space:nowrap}.ok{background:var(--ok)}.wa{background:var(--wa)}.ko{background:var(--ko)}
+.bar{display:flex;align-items:center;gap:6px;margin:4px 0;font-size:12px}.bar i{display:block;height:14px;background:var(--ac);border-radius:2px}.bar i.s{background:#3b82c4}.bar span{width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph{border:2px solid #000;padding:10px;background:#fff;color:#000}.ph th{background:#333}.ph td{border-color:#555}
+@media(max-width:760px){body{display:block}nav{width:100%;display:flex;overflow-x:auto;padding:0}nav h1{display:none}nav a{white-space:nowrap;border-left:0;border-bottom:3px solid transparent}}
+@media print{@page{size:A4 landscape;margin:8mm}nav,.tb,.np,h2{display:none!important}body{display:block;background:#fff}main{padding:0}.card{border:0;padding:0}}
+</style></head><body>
+<nav id="nav"><h1>GAMME USINAGE<br>& CALCULATEUR OUTILS</h1></nav><main id="m"></main>
+<script>
+const MENU=[['dash','🏠 Dashboard'],['piece','📦 Pièces'],['ops','⚙️ Gammes / Opérations'],['tools','🛠️ Outils'],['cut','📐 Conditions de coupe'],['calc','🧮 Calculateur / Synthèse'],['plan','📋 Plan de phase / Rapports'],['stock','📦 Stock'],['params','⚙️ Paramètres']];
+const seed=()=>({v:'home',piece:{ref:'P-001',des:'Axe',ind:'A',mat:'Inox 316L',rm:'650 MPa',dur:'200 HB',qte:500,mach:'DOOSAN PUMA DNT 2600M',dos:'D-2026-014',date:new Date().toISOString().slice(0,10),prep:'',ver:'1.0'},marge:10,
+ops:[{n:10,seq:'Ébauche de face et Ø extérieur',type:'Tournage',desc:'',mach:'',temps:'',com:'',tool:'WNMG 08 04 08-MR2025',mode:'tour',vc:180,D:30,f:0.25,fz:'',z:'',ap:2,passes:3,L:60},
+{n:20,seq:'Perçage Ø5',type:'Perçage',desc:'',mach:'',temps:'',com:'',tool:'Foret Ø5',mode:'tour',vc:60,D:5,f:0.08,fz:'',z:'',ap:'',passes:1,L:25},
+{n:30,seq:'Finition Ø extérieur',type:'Tournage',desc:'',mach:'',temps:'',com:'',tool:'WNMG 08 04 08-MR2025',mode:'tour',vc:220,D:30,f:0.1,fz:'',z:'',ap:0.5,passes:1,L:60},
+{n:40,seq:'Rainurage',type:'Tournage',desc:'',mach:'',temps:1.2,com:'',tool:'',mode:'tour',vc:'',D:'',f:'',fz:'',z:'',ap:'',passes:'',L:''}],
+tools:[{ref:'WNMG 08 04 08-MR2025',des:'Plaquette de tournage',type:'Plaquette de tournage',fab:'',T:'0303',LU:'',LD:'',LS:'',ph:'MWLNR 2525 M08',plaq:'WNMG 080408',nuance:'MR2025',geo:'MR',dia:'',dents:'',rayon:0.8,vie:240,aretes:4,stock:3,smin:2,prix:9.5},
+{ref:'Foret Ø5',des:'Foret carbure Ø5',type:'Foret',fab:'',T:'0609',LU:'',LD:'',LS:90,ph:'Pince Ø5',plaq:'',nuance:'',geo:'',dia:5,dents:2,rayon:'',vie:30,aretes:1,stock:8,smin:2,prix:28}]});
+let S;try{S=JSON.parse(localStorage.getItem('gu')||'null')}catch(e){}if(!S||!S.piece)S=seed();
+const save=()=>{try{localStorage.setItem('gu',JSON.stringify(S))}catch(e){}};
+const num=v=>{if(v===''||v==null)return null;const x=parseFloat(String(v).replace(',','.'));return isFinite(x)?x:null};
+const MISS='<span class=miss>Paramètre manquant</span>';
+const F=(v,d=2)=>{const x=num(v);return x==null?MISS:(Math.round(x*10**d)/10**d).toLocaleString('fr-FR')};
+const ceil=x=>Math.ceil(x-1e-9);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function opCalc(o){const vc=num(o.vc),D=num(o.D),L=num(o.L),p=num(o.passes)||1;let N=null,Vf=null,t=null;
+ if(vc!=null&&D>0)N=1000*vc/(Math.PI*D);
+ if(N!=null){if(o.mode==='fraisage'){const fz=num(o.fz),z=num(o.z);if(fz!=null&&z!=null)Vf=fz*z*N}else{const f=num(o.f);if(f!=null)Vf=f*N}}
+ if(Vf>0&&L!=null)t=L*p/Vf;
+ return{N,Vf,t,time:t!=null?t:num(o.temps)}}
+const tool=r=>S.tools.find(t=>t.ref===r);
+function needs(){const m={};S.ops.forEach(o=>{if(!o.tool)return;const c=opCalc(o);const e=m[o.tool]=m[o.tool]||{ref:o.tool,time:0,miss:false,ops:[]};if(c.time==null)e.miss=true;else e.time+=c.time;e.ops.push(o.n)});
+ const q=num(S.piece.qte);return Object.values(m).map(e=>{const t=tool(e.ref)||{};const vie=num(t.vie),ar=num(t.aretes),ok=!e.miss&&e.time>0&&vie!=null&&ar!=null&&q!=null;
+ const r={...e,t,vie,ar,q,stock:num(t.stock)||0,smin:num(t.smin)||0,ok};if(ok){r.ppa=Math.floor(vie/e.time);r.ok=r.ppa>0;if(r.ok){r.ppo=r.ppa*ar;r.theo=ceil(q/r.ppo);r.fin=ceil(r.theo*(1+S.marge/100));r.chg=ceil(q/r.ppa);r.cmd=Math.max(0,r.fin-r.stock);r.tbc=r.ppa*e.time;r.st=r.stock<r.fin?'ko':(r.stock-r.fin<r.smin?'wa':'ok')}}return r})}
+const ST={ok:'🟢 STOCK SUFFISANT',wa:'🟠 STOCK FAIBLE',ko:'🔴 À COMMANDER'};
+const badge=r=>r.ok?`<span class="b ${r.st}">${ST[r.st]}</span>`:MISS;
+const cell=(r,k,d=0)=>r.ok?F(r[k],d):MISS;
+function u(list,i,k,v,re){(i==null?S[list]:S[list][i])[k]=v;save();if(re!==0)go()}
+const inp=(l,i,k,v,t='text')=>`<input type="${t}" value="${esc(v)}" onchange="u('${l}',${i},'${k}',this.value)">`;
+const sel=(l,i,k,v,opts)=>`<select onchange="u('${l}',${i},'${k}',this.value)">${opts.map(o=>`<option ${o==v?'selected':''}>${esc(o)}</option>`).join('')}</select>`;
+const toolSel=(i,v)=>`<select onchange="u('ops',${i},'tool',this.value)"><option value="">—</option>${S.tools.map(t=>`<option ${t.ref===v?'selected':''}>${esc(t.ref)}</option>`).join('')}</select>`;
+const bars=(items,cls='')=>{const mx=Math.max(1,...items.map(i=>i[1]));return items.length?items.map(i=>`<div class=bar><span title="${esc(i[0])}">${esc(i[0])}</span><i class="${cls}" style="width:${i[1]/mx*55}%"></i>${F(i[1],1)}</div>`).join(''):'<i class=miss>Aucune donnée</i>'};
+function tbl(h,rows){return`<div class=tw><table><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr>${rows.join('')}</table></div>`}
+const V={};
+V.dash=()=>{const N=needs().filter(r=>r.ok),tt=S.ops.reduce((a,o)=>a+(opCalc(o).time||0),0);
+ const k=(l,v)=>`<div class=card><label>${l}</label><div class=kpi>${v}</div></div>`;
+ const byT={};N.forEach(r=>byT[r.t.type||'?']=(byT[r.t.type||'?']||0)+r.fin);
+ return`<h2>Dashboard</h2><div class=grid>${k('Pièces',F(S.piece.qte,0))}${k('Opérations',S.ops.length)}${k('Outils',S.tools.length)}${k('Besoin total',N.reduce((a,r)=>a+r.fin,0))}${k('À commander',N.reduce((a,r)=>a+r.cmd,0))}${k('Temps usinage / pièce (min)',F(tt))}${k('Changements d\'outils',N.reduce((a,r)=>a+r.chg,0))}</div>
+ <div class=grid style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))"><div class=card><h3>Besoin outils par opération</h3>${bars(S.ops.map(o=>{const r=N.find(x=>x.ref===o.tool);return[o.n+' '+o.seq,r?r.fin*(opCalc(o).time||0)/r.time:0]}))}</div>
+ <div class=card><h3>Besoin par type d'outil</h3>${bars(Object.entries(byT))}</div>
+ <div class=card><h3>Consommation (outils / série)</h3>${bars(N.map(r=>[r.ref,r.theo]))}</div>
+ <div class=card><h3>Stock (bleu) / Besoin (orange)</h3>${N.map(r=>bars([[r.ref+' besoin',r.fin]])+bars([[r.ref+' stock',r.stock]],'s')).join('')||'<i class=miss>Aucune donnée</i>'}</div></div>`};
+V.piece=()=>{const p=S.piece,fl=[['ref','Référence pièce'],['des','Désignation'],['ind','Indice'],['mat','Matière'],['rm','Résistance matière'],['dur','Dureté'],['qte','Quantité à fabriquer'],['mach','Machine'],['dos','N° dossier'],['date','Date'],['prep','Préparateur'],['ver','Version']];
+ return`<h2>Fiche pièce</h2><div class="card grid">${fl.map(([k,l])=>`<div><label>${l}</label>${inp('piece',null,'' + k,p[k],k==='date'?'date':'text')}</div>`).join('')}</div>`};
+V.ops=()=>`<h2>Gamme d'usinage</h2><div class=tb><button onclick="S.ops.push({n:(S.ops.length+1)*10,seq:'',type:'Tournage',mode:'tour',tool:''});save();go()">+ Ajouter une opération</button></div><div class=card>${tbl(['N°','Séquence','Type','Description','Machine','Temps (min)','Commentaire','Outil','↕','🗑️'],S.ops.map((o,i)=>`<tr><td>${inp('ops',i,'n',o.n)}</td><td>${inp('ops',i,'seq',o.seq)}</td><td>${sel('ops',i,'type',o.type,['Tournage','Fraisage','Perçage','Rainurage','Filetage','Contrôle'])}</td><td>${inp('ops',i,'desc',o.desc)}</td><td>${inp('ops',i,'mach',o.mach)}</td><td>${inp('ops',i,'temps',o.temps)}</td><td>${inp('ops',i,'com',o.com)}</td><td>${toolSel(i,o.tool)}</td><td><button class=g onclick="mv(${i},-1)">↑</button> <button class=g onclick="mv(${i},1)">↓</button></td><td><button class=r onclick="if(confirm('Supprimer ?')){S.ops.splice(${i},1);save();go()}">✕</button></td></tr>`))}</div>`;
+function mv(i,d){const j=i+d;if(j<0||j>=S.ops.length)return;[S.ops[i],S.ops[j]]=[S.ops[j],S.ops[i]];save();go()}
+V.tools=()=>{const c=[['ref','Référence'],['des','Désignation'],['type','Type'],['fab','Fabricant'],['T','T'],['LU','LU'],['LD','LD'],['LS','LS'],['ph','Porte-outil'],['plaq','Plaquette'],['nuance','Nuance'],['geo','Géométrie'],['dia','Ø'],['dents','Dents'],['rayon','Rayon'],['vie','Durée vie (min)'],['aretes','Arêtes'],['stock','Stock'],['smin','Stock min'],['prix','Prix €']];
+ return`<h2>Base outils</h2><div class=tb><button onclick="S.tools.push({ref:'NOUVEL OUTIL '+(S.tools.length+1),aretes:1});save();go()">+ Ajouter un outil</button></div><div class=card>${tbl(c.map(x=>x[1]).concat('🗑️'),S.tools.map((t,i)=>`<tr>${c.map(([k])=>`<td>${k==='ref'?`<input value="${esc(t.ref)}" onchange="renameTool(${i},this.value)">`:inp('tools',i,k,t[k])}</td>`).join('')}<td><button class=r onclick="S.tools.splice(${i},1);save();go()">✕</button></td></tr>`))}</div>`};
+function renameTool(i,v){const o=S.tools[i].ref;S.ops.forEach(p=>{if(p.tool===o)p.tool=v});S.tools[i].ref=v;save();go()}
+V.cut=()=>`<h2>Conditions de coupe</h2><div class=card><p style="font-size:12px;color:var(--mu)">N = 1000·Vc / (π·D) — Tournage/perçage : Vf = f·N — Fraisage : Vf = fz·Z·N — Temps = L × passes / Vf</p>${tbl(['N°','Séquence','Mode','Vc m/min','D mm','f mm/tr','fz mm/dt','Z','ap mm','Passes','L mm','N tr/min','Vf mm/min','Temps min'],S.ops.map((o,i)=>{const c=opCalc(o);return`<tr><td>${o.n}</td><td>${esc(o.seq)}</td><td>${sel('ops',i,'mode',o.mode,['tour','fraisage'])}</td>${['vc','D','f','fz','z','ap','passes','L'].map(k=>`<td>${inp('ops',i,k,o[k])}</td>`).join('')}<td>${c.N==null?MISS:F(c.N,0)}</td><td>${c.Vf==null?MISS:F(c.Vf,1)}</td><td>${c.time==null?MISS:F(c.time,2)}${c.t==null&&c.time!=null?' <small>(saisi)</small>':''}</td></tr>`}))}</div>`;
+const NH=['Outil','Pièces/arête','Arêtes','Pièces/outil','Quantité série','Changements','Besoin outils','Stock','À commander','État'];
+const nRow=r=>`<tr><td>${esc(r.ref)}</td><td>${cell(r,'ppa')}</td><td>${F(r.ar,0)}</td><td>${cell(r,'ppo')}</td><td>${F(r.q,0)}</td><td>${cell(r,'chg')}</td><td>${cell(r,'fin')}</td><td>${F(r.stock,0)}</td><td>${cell(r,'cmd')}</td><td>${badge(r)}</td></tr>`;
+V.calc=()=>{const N=needs();return`<h2>Calculateur & synthèse</h2><div class="card grid"><div><label>Quantité série</label>${inp('piece',null,'qte',S.piece.qte)}</div><div><label>Marge sécurité %</label>${inp('S',null,'marge',S.marge)}</div></div>
+<div class=card>${tbl(['Outil','Opérations','Temps/pièce (min)','Durée vie (min)','Pièces/arête','Arêtes','Pièces/outil','Temps avant changement (min)','Besoin théorique','Marge','Besoin final','Changements série'],N.map(r=>`<tr><td>${esc(r.ref)}</td><td>${r.ops.join(', ')}</td><td>${r.miss?MISS:F(r.time,2)}</td><td>${F(r.vie)}</td><td>${cell(r,'ppa')}</td><td>${F(r.ar,0)}</td><td>${cell(r,'ppo')}</td><td>${cell(r,'tbc',1)}</td><td>${cell(r,'theo')}</td><td>${S.marge} %</td><td>${cell(r,'fin')}</td><td>${cell(r,'chg')}</td></tr>`))}</div>
+<div class=card><h3>Tableau final de calcul des outils</h3>${tbl(NH,N.map(nRow))}<p style="font-size:12px;color:var(--mu)">Pièces/arête = ⌊durée de vie / temps pièce⌋ · Pièces/outil = pièces/arête × arêtes · Besoin = ⌈série / pièces par outil⌉ · Final = ⌈besoin × (1 + marge)⌉ · Changements = ⌈série / pièces par arête⌉</p></div>`};
+V.stock=()=>`<h2>Stock</h2><div class=card>${tbl(['Outil','Stock actuel','Stock min','Besoin final','À commander','État','Coût commande €'],needs().map(r=>`<tr><td>${esc(r.ref)}</td><td>${inp('tools',S.tools.indexOf(r.t),'stock',r.t.stock)}</td><td>${F(r.smin,0)}</td><td>${cell(r,'fin')}</td><td>${cell(r,'cmd')}</td><td>${badge(r)}</td><td>${r.ok&&num(r.t.prix)!=null?F(r.cmd*num(r.t.prix)):MISS}</td></tr>`))}</div>`;
+V.params=()=>`<h2>Paramètres</h2><div class="card grid"><div><label>Marge de sécurité outils (%)</label>${inp('S',null,'marge',S.marge)}</div></div><div class=tb><button class=g onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='dark'?'light':'dark'">Thème clair / sombre</button><button class=r onclick="if(confirm('Réinitialiser toutes les données ?')){S=seed();save();go()}">Réinitialiser</button></div><p style="color:var(--mu)">Architecture : les durées de vie (champ « Durée vie ») sont modifiables par outil — elles pourront être remplacées par des durées de vie réelles issues de la production.</p>`;
+V.plan=()=>{const p=S.piece,N=needs();return`<h2>Plan de phase</h2><div class=tb><button onclick="print()">🖨️ Imprimer / 📄 Export PDF</button><button onclick="xl()">📊 Export Excel</button><button onclick="save();alert('Gamme enregistrée.')">💾 Enregistrer la gamme</button></div>
+<div class="card"><div class=ph><h3 style="margin:0 0 8px;text-align:center;font-size:17px">PLAN DE PHASE – GAMME D'USINAGE</h3>
+<table style="margin-bottom:8px"><tr><td><b>Réf.</b> ${esc(p.ref)}</td><td><b>Désignation</b> ${esc(p.des)}</td><td><b>Matière</b> ${esc(p.mat)}</td><td><b>Machine</b> ${esc(p.mach)}</td></tr><tr><td><b>Quantité</b> ${esc(p.qte)}</td><td><b>Indice</b> ${esc(p.ind)}</td><td><b>Date</b> ${esc(p.date)}</td><td><b>Préparateur</b> ${esc(p.prep)}</td></tr></table>
+${tbl(['N°','SÉQUENCE D\'USINAGE','T','LU','LD','LS','PORTE-OUTILS','OUTILS','CONDITIONS DE COUPE','FRÉQUENCE DE CHANGEMENT'],S.ops.map(o=>{const t=tool(o.tool)||{},r=N.find(x=>x.ref===o.tool),c=opCalc(o);return`<tr><td>${o.n}</td><td>${esc(o.seq)}</td><td>${esc(t.T)}</td><td>${esc(t.LU)}</td><td>${esc(t.LD)}</td><td>${esc(t.LS)}</td><td>${esc(t.ph)}</td><td>${esc(o.tool)}</td><td>${o.vc!==''&&o.vc!=null?`Vc ${esc(o.vc)} · N ${c.N==null?'?':F(c.N,0)} · Vf ${c.Vf==null?'?':F(c.Vf,0)} · ap ${esc(o.ap||'-')}`:'—'}</td><td>${o.tool?(r&&r.ok?'Tous les '+r.ppa+' pièces (par arête)':MISS):'—'}</td></tr>`}))}
+<h3>BESOIN EN OUTILS</h3>${tbl(NH.slice(0,9),N.map(nRow))}</div></div>`};
+function xl(){if(!window.XLSX){alert('Export Excel indisponible hors ligne.');return}const N=needs(),w=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(w,XLSX.utils.json_to_sheet(S.ops.map(o=>{const t=tool(o.tool)||{},c=opCalc(o);return{'N°':o.n,'Séquence':o.seq,T:t.T,LU:t.LU,LD:t.LD,LS:t.LS,'Porte-outils':t.ph,Outils:o.tool,'Temps (min)':c.time==null?'Paramètre manquant':+c.time.toFixed(2)}})),'Plan de phase');
+ XLSX.utils.book_append_sheet(w,XLSX.utils.json_to_sheet(N.map(r=>({Outil:r.ref,'Pièces/arête':r.ok?r.ppa:'Paramètre manquant','Arêtes':r.ar,'Pièces/outil':r.ok?r.ppo:'','Quantité série':r.q,Changements:r.ok?r.chg:'','Besoin final':r.ok?r.fin:'',Stock:r.stock,'À commander':r.ok?r.cmd:''}))),'Besoin outils');
+ XLSX.writeFile(w,'gamme_'+S.piece.ref+'.xlsx')}
+function go(v){if(v)S.v=v;const a=V[S.v]?S.v:'dash';document.getElementById('nav').innerHTML=document.getElementById('nav').querySelector('h1').outerHTML+MENU.map(([k,l])=>`<a class="${k===a?'on':''}" onclick="go('${k}')">${l}</a>`).join('');document.getElementById('m').innerHTML=V[a]();}
+window.u2=u;const _u=u;u=function(l,i,k,v,re){if(l==='S'){S[k]=num(v)??0;save();go();return}_u(l,i,k,v,re)};
+S.v='dash';go();
+</script></body></html>
